@@ -1,1 +1,2 @@
-# Flappy-Brid
+# Flappy-Bird
+
