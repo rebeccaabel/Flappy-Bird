@@ -26,12 +26,39 @@ let pipeY = canvas.height - 200;
 let scoreDiv = document.getElementById('score-display');
 let score = 0;
 let highscore = 0;
+let scored = false;
+
+
 
 document.body.onkeyup = function(e) {
     if (e.code == 'Space') {
         birdVelocity = BIRD_SPEED;
     }
 }
+
+document.getElementById('restart-button').addEventListener('click', () => {
+hideEndMenu();
+resetGame();
+resetCtx();
+})
+
+
+function scoreIncrease () {
+    if (birdX > pipeX + PIPE_WIDTH && 
+        (birdY < pipeY + PIPE_GAP || 
+            birdY + BIRD_HEIGHT > pipeY + PIPE_GAP ) && !scored ) {
+                score++;
+                scoreDiv.innerHTML = score;
+                scored = true;
+            }
+
+
+            if (birdX < pipeX + PIPE_WIDTH) {
+                scored = false; 
+            }
+
+}
+
 
 function collision () {
     const birdBox = {
@@ -89,6 +116,21 @@ function showEndMenu () {
     if ( highscore < score) {
         highscore = score; 
     }
+
+    document.getElementById('highscore').innerHTML = highscore;
+}
+
+function resetGame () {
+    birdX = 50;
+    birdY = 50;
+    birdVelocity = 0; 
+    birdAcceleration = 0.1; 
+
+    pipeX = 400;
+    pipeY = canvas.height - 200; 
+
+    score = 0; 
+
 }
 
 
@@ -118,6 +160,7 @@ function resetCtx () {
     birdVelocity += birdAcceleration;
     birdY += birdVelocity;
 
+    scoreIncrease();
     requestAnimationFrame(resetCtx);
 
 }
