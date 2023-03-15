@@ -8,14 +8,14 @@
     <title>Flappy Bird</title>
 </head>
 <body>
-    <div class ="end-menu">
+    <div id="end-menu">
         <h1>Game Over!</h1>
         <p> Score: <span id="end-score"></span></p>
         <p> Best: <span id="best-score"></span></p>
         <button id="restart-button">Restart</button>
     </div>
         <div class="game">
-            <canvas width="400" height="600"></canvas>
+            <canvas id="game-canvas" width="400" height="600"></canvas>
             <div id="score-display">0</div>
         </div>
         <script src="app.js"></script>

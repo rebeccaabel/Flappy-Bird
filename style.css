@@ -15,7 +15,7 @@ canvas {
     z-index: 1;
 }
 
-.end-menu {
+#end-menu {
     display: none; /* will toggle this*/
     margin: 50px auto;
     width: 200px;
@@ -26,6 +26,7 @@ canvas {
     position: absolute;
     left: 50%;
     transform: translate(-50%, 50%);
+    z-index: 1000;
 }
 
 #score-display {
