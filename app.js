@@ -1,9 +1,11 @@
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
+
 let frames = 0;
+const rotationDegree = Math.PI/180;
 
 const sprite = new Image();
-sprite.src = "sprite.png";
+sprite.src = "/pictures/sprite.png";
 
 const gameState = {
     current : 0,
@@ -52,9 +54,18 @@ const ground = {
     x : 0,
     y : canvas.height - 112,
 
+    dx: 2,
+
     draw: function () {
         context.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
         context.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x + this.w, this.y, this.w, this.h);
+    },
+
+    update : function () {
+       if (gameState.current === gameState.game) {
+        this.x = (this.x - this.dx) % (this.w/2);
+       }
+
     }
 }
 
@@ -70,27 +81,60 @@ const bird = {
     w: 34,
     h: 26,
 
+    radius: 12, 
+
     frame: 0,
+
+    gravity: 0.25,
+    jump: 4.6,
+    speed: 0,
+    rotation: 0,
 
     draw: function () {
         let birdAnimation = this.animation[this.frame];
 
-        context.drawImage(sprite, birdAnimation.sourceX, birdAnimation.sourceY, this.w, this.h, this.x - this.w/2, this.y - this.h/2, this.w, this.h);
+        context.save();
+        context.translate(this.x, this.y );
+        context.rotate(this.rotation);
+        context.drawImage(sprite, birdAnimation.sourceX, birdAnimation.sourceY, this.w, this.h,  - this.w/2, - this.h/2, this.w, this.h);
 
+        context.restore();
     },
 
     flap: function () {
+        this.speed =- this.jump;
+
     },
 
     update : function () {
         //GAME STATE IS GET READY BIRD FLAP SLOWLY 
         this.period = gameState.current == gameState.getReady ? 10 : 5;
-
         // FRAME +1 EACH PERIOD
         this.frame += frames % this.period == 0 ? 1 : 0;
-
         //BACK TO 0 WHEN FRAME = 4
         this.frame = this.frame % this.animation.length;
+
+        if(gameState.current == gameState.getReady){
+            this.y = 150; // RESET BIRD POSITION
+            this.rotation = 0 * rotationDegree;
+        }else {
+            this.speed += this.gravity;
+            this.y += this.speed;
+
+            if(this.y + this.h/2 >= canvas.height - ground.h) {
+                this.y = canvas.height - ground.h - this.h/2;
+                if(gameState.current == gameState.game){
+                    gameState.current = gameState.gameOver;
+                }
+            }
+
+            if(this.speed >= this.jump) {
+                this.rotation = 90 * rotationDegree;
+                this.frame = 1;
+            } else {
+                this.rotation = -25 * rotationDegree;
+            }
+        }
     }
 }
 
@@ -125,19 +169,94 @@ const gameOverMsg = {
 }
 
 
+const pipes = {
+    position : [],
+
+    top: {
+        sourceX: 553,
+        sourceY: 0,
+    },
+
+    bottom: {
+        sourceX: 502,
+        sourceY: 0,
+    },
+
+    w: 53,
+    h: 400,
+    gap: 85,
+    maxYPosition: -150,
+    dx: 2,
+
+    draw: function () {
+        for(let i = 0; i < this.position.length; i++) {
+            let p = this.position[i];
+
+            let topYPosition = p.y;
+            let bottomYPosition = p.y + this.h + this.gap;
+
+            // TOP PIPE
+            context.drawImage(sprite, this.top.sourceX, this.top.sourceY, this.w, this.h, p.x, topYPosition, this.w, this.h);
+
+            // BOTTOM PIPE
+            context.drawImage(sprite, this.bottom.sourceX, this.bottom.sourceY, this.w, this.h, p.x, bottomYPosition, this.w, this.h);
+
+        }
+    },
+
+    update: function () {
+        if(gameState.current !== gameState.game) return;
+
+        if(frames % 100 == 0) {
+            this.position.push({
+                x: canvas.width,
+                y: this.maxYPosition * (Math.random() + 1) ,
+            });
+        }
+        for(let i = 0; i < this.position.length; i++ ) {
+            let p = this.position[i];
+
+            let bottomYPosition = p.y + this.h + this.gap;
+
+            // COLLISION TOP PIPE
+            if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w && 
+                bird.y + bird.radius > p.y && bird.y - bird.radius < p.y + this.h) {
+                    gameState.current = gameState.gameOver;
+
+                }
+
+            // COLLISON BOTTOM PIPE 
+            if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w && 
+                bird.y + bird.radius > bottomYPosition && bird.y - bird.radius < bottomYPosition + this.h) {
+                    gameState.current = gameState.gameOver;
+                }
+
+                // MOVING THE PIPES
+                p.x -= this.dx;
+
+            if(p.x + this.w <= 0) {
+                this.position.shift();
+            }
+        }
+    }
+}
+
+
 function draw () {
     context.fillStyle = "#70c5ce";
     context.fillRect(0, 0, canvas.width, canvas.height);
     background.draw();
+    pipes.draw();
     ground.draw();
     bird.draw();
     getReady.draw();
     gameOverMsg.draw();
-
 }
 
 function update () {
     bird.update();
+    ground.update();
+    pipes.update();
 }
 
 function loop () {
@@ -146,186 +265,4 @@ function loop () {
     frames++;
     requestAnimationFrame(loop);
 }
-
 loop();
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-
-const birdImg = new Image();
-birdImg.src = 'pictures/bird (1).png';
-
-//game const
-const BIRD_SPEED = -5;
-const BIRD_WIDTH = 40;
-const BIRD_HEIGHT = 30;
-const PIPE_WIDTH = 50;
-const PIPE_GAP = 125;
-
-//bird variables
-let birdX = 50;
-let birdY = 50;
-let birdVelocity = 0; 
-let birdAcceleration = 0.1; 
-
-
-//pipe variables
-let pipeX = 400;
-let pipeY = canvas.height - 200; 
-
-//Score and highscore
-let scoreDiv = document.getElementById('score-display');
-let score = 0;
-let highscore = 0;
-let scored = false;
-
-
-
-document.body.onkeyup = function(e) {
-    if (e.code == 'Space') {
-        birdVelocity = BIRD_SPEED;
-    }
-}
-
-document.getElementById('restart-button').addEventListener('click', () => { // window reload 
-    resetGame();
-    hideEndMenu();
-    resetCtx();
-})
-
-
-function scoreIncrease () {
-    if (birdX > pipeX + PIPE_WIDTH && 
-        (birdY < pipeY + PIPE_GAP || 
-            birdY + BIRD_HEIGHT > pipeY + PIPE_GAP ) && !scored ) {
-                score++;
-                scoreDiv.innerHTML = score;
-                scored = true;
-            }
-
-
-         /*   if (birdX < pipeX + PIPE_WIDTH) {
-                scored = false; 
-            }
-
-}
-
-
-function collision () {
-    const birdBox = {
-        x: birdX,
-        y: birdY,
-        width: BIRD_WIDTH,
-        height: BIRD_HEIGHT
-    }
-
-    const topPipe = {
-        x: pipeX,
-        y: pipeY - PIPE_GAP + BIRD_HEIGHT,
-        width: PIPE_WIDTH,
-        height: pipeY
-    }
-
-    const bottomPipe = {
-        x: pipeX,
-        y: pipeY + PIPE_GAP + BIRD_HEIGHT,
-        width: PIPE_WIDTH,
-        height: canvas.height - pipeY - PIPE_GAP
-    }
-
-    if (birdBox.x + birdBox.width > topPipe.x &&
-        birdBox.x < topPipe.x + topPipe.width &&
-        birdBox.y < topPipe.y) {
-            return true;
-    }
-
-    if (birdBox.x + birdBox.width > bottomPipe.x &&
-        birdBox.x < bottomPipe.x + bottomPipe.width &&
-        birdBox.y + birdBox.height > bottomPipe.y) {
-            return true;
-        }
-
-    if(birdY < 0 || birdY + BIRD_HEIGHT > canvas.height) {
-        return true;
-    }
-
-    return false;
-
-}
-
-function gameOver () {
-    showEndMenu();
-}
-
-function hideEndMenu () {
-    document.getElementById('end-menu').style.display = 'none';
-}
-
-function showEndMenu () {
-    document.getElementById('end-menu').style.display = 'block';
-    document.getElementById('end-score').innerHTML = score; 
-    if ( highscore < score) {
-        highscore = score; 
-    }
-
-    document.getElementById('highscore').innerHTML = highscore;
-}
-
-function resetGame () {
-    birdX = 50;
-    birdY = 50;
-    birdVelocity = 0; 
-    birdAcceleration = 0.1; 
-
-    pipeX = 400;
-    pipeY = canvas.height - 200; 
-
-    score = 0; 
-
-}
-
-
-function resetCtx () {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.drawImage(birdImg, birdX, birdY);
-
-    ctx.fillStyle = '#333';
-    ctx.fillRect(pipeX, -100, PIPE_WIDTH, pipeY);
-    ctx.fillRect(pipeX, pipeY + PIPE_GAP, PIPE_WIDTH, canvas.width - pipeY);
-
-    //collision 
-    if(collision()) {
-        gameOver();
-        return;
-    }
-
-    pipeX -= 1.7;
-    if(pipeX < -50) {
-        pipeX = 400; 
-        pipeY = Math.random() * (canvas.height - PIPE_GAP) + PIPE_WIDTH; 
-
-    }
-
-    //gravity
-    birdVelocity += birdAcceleration;
-    birdY += birdVelocity;
-
-    scoreIncrease();
-    requestAnimationFrame(resetCtx);
-
-}
-
-resetCtx();*/ 
