@@ -7,6 +7,21 @@ const rotationDegree = Math.PI/180;
 const sprite = new Image();
 sprite.src = "/pictures/sprite.png";
 
+const score_sound = new Audio();
+score_sound.src = "/audio/audio_sfx_point.wav"
+
+const swoosh_sound = new Audio();
+swoosh_sound.src = "/audio/audio_sfx_swooshing.wav"
+
+const hit_sound = new Audio();
+hit_sound.src = "/audio/audio_sfx_hit.wav"
+
+const die_sound = new Audio();
+die_sound.src = "/audio/audio_sfx_die.wav"
+
+const flap_sound = new Audio();
+flap_sound.src = "/audio/audio_sfx_flap.wav"
+
 const gameState = {
     current : 0,
     getReady : 0,
@@ -14,16 +29,35 @@ const gameState = {
     gameOver : 2
 }
 
+const resetButton = {
+    x: 120,
+    y: 263,
+    w: 83,
+    h: 29,
+}
+
 canvas.addEventListener("click", function (e) {
     switch(gameState.current){
         case gameState.getReady:
             gameState.current = gameState.game;
+            swoosh_sound.play();
             break;
         case gameState.game:
             bird.flap();
+            flap_sound.play();
             break;
         case gameState.gameOver:
-            gameState.current = gameState.getReady;
+            let rect = canvas.getBoundingClientRect();
+            let clickX = e.clientX - rect.left;
+            let clickY = e.clientY - rect.top;
+
+            if( clickX >= resetButton.x && clickX <= resetButton.x + resetButton.w &&
+                clickY >= resetButton.y && clickY <= resetButton.y + resetButton.h) {
+                    pipes.reset();
+                    bird.speedReset();
+                    score.reset();
+                    gameState.current = gameState.getReady;
+                }
             break;
     }
 
@@ -125,6 +159,7 @@ const bird = {
                 this.y = canvas.height - ground.h - this.h/2;
                 if(gameState.current == gameState.game){
                     gameState.current = gameState.gameOver;
+                    die_sound.play();
                 }
             }
 
@@ -135,6 +170,11 @@ const bird = {
                 this.rotation = -25 * rotationDegree;
             }
         }
+    },
+
+    speedReset: function () {
+        this.speed = 0;
+
     }
 }
 
@@ -222,6 +262,7 @@ const pipes = {
             if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w && 
                 bird.y + bird.radius > p.y && bird.y - bird.radius < p.y + this.h) {
                     gameState.current = gameState.gameOver;
+                    hit_sound.play();
 
                 }
 
@@ -229,6 +270,7 @@ const pipes = {
             if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w && 
                 bird.y + bird.radius > bottomYPosition && bird.y - bird.radius < bottomYPosition + this.h) {
                     gameState.current = gameState.gameOver;
+                    hit_sound.play();
                 }
 
                 // MOVING THE PIPES
@@ -236,11 +278,48 @@ const pipes = {
 
             if(p.x + this.w <= 0) {
                 this.position.shift();
+                score.value += 1;
+                score_sound.play();
+                score.best = Math.max(score.value, score.best);
+                localStorage.setItem("best", score.best);
             }
         }
+    }, 
+    reset: function () {
+        this.position = [];
     }
 }
 
+const score = {
+    best: parseInt(localStorage.getItem("best")) || 0,
+    value: 0,
+
+    draw: function () {
+        context.fillStyle = "#FFF";
+        context.strokeStyle = "#000"
+
+        if(gameState.current == gameState.game) {
+            context.lineWidth = 2;
+            context.font = "35px Teko";
+            context.fillText(this.value, canvas.width/2, 50);
+            context.strokeText(this.value, canvas.width/2, 50);
+
+        } else if(gameState.current == gameState.gameOver) {
+            // SCORE 
+            context.font = "25px Teko";
+            context.fillText(this.value, 225, 186);
+            context.strokeText(this.value, 225, 186);
+
+            // BEST SCORE
+            context.fillText(this.best, 225, 228);
+            context.strokeText(this.best, 225, 228); 
+        }
+    },
+
+    reset: function () {
+        this.value = 0; 
+    }
+}
 
 function draw () {
     context.fillStyle = "#70c5ce";
@@ -251,6 +330,7 @@ function draw () {
     bird.draw();
     getReady.draw();
     gameOverMsg.draw();
+    score.draw();
 }
 
 function update () {
