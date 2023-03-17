@@ -5,6 +5,29 @@ let frames = 0;
 const sprite = new Image();
 sprite.src = "sprite.png";
 
+const gameState = {
+    current : 0,
+    getReady : 0,
+    game : 1,
+    gameOver : 2
+}
+
+canvas.addEventListener("click", function (e) {
+    switch(gameState.current){
+        case gameState.getReady:
+            gameState.current = gameState.game;
+            break;
+        case gameState.game:
+            bird.flap();
+            break;
+        case gameState.gameOver:
+            gameState.current = gameState.getReady;
+            break;
+    }
+
+});
+
+
 const background = {
     sX : 0,
     sY : 0,
@@ -54,6 +77,20 @@ const bird = {
 
         context.drawImage(sprite, birdAnimation.sourceX, birdAnimation.sourceY, this.w, this.h, this.x - this.w/2, this.y - this.h/2, this.w, this.h);
 
+    },
+
+    flap: function () {
+    },
+
+    update : function () {
+        //GAME STATE IS GET READY BIRD FLAP SLOWLY 
+        this.period = gameState.current == gameState.getReady ? 10 : 5;
+
+        // FRAME +1 EACH PERIOD
+        this.frame += frames % this.period == 0 ? 1 : 0;
+
+        //BACK TO 0 WHEN FRAME = 4
+        this.frame = this.frame % this.animation.length;
     }
 }
 
@@ -66,7 +103,24 @@ const getReady = {
     y : 80,
 
     draw : function(){
-        context.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
+        if(gameState.current == gameState.getReady) {
+            context.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
+        }
+    }
+}
+
+const gameOverMsg = {
+    sX : 175,
+    sY : 228,
+    w : 225,
+    h : 202,
+    x : canvas.width/2 - 225/2,
+    y : 90,
+
+    draw : function(){
+        if(gameState.current == gameState.gameOver) {
+            context.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
+        }
     }
 }
 
@@ -78,15 +132,16 @@ function draw () {
     ground.draw();
     bird.draw();
     getReady.draw();
+    gameOverMsg.draw();
 
 }
 
-/*function update () {
-
-}*/
+function update () {
+    bird.update();
+}
 
 function loop () {
-   //update();
+    update();
     draw();
     frames++;
     requestAnimationFrame(loop);
