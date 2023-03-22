@@ -8,19 +8,19 @@ const sprite = new Image();
 sprite.src = "https://rebeccaabel.github.io/Flappy-Bird/pictures/sprite.png";
 
 const score_sound = new Audio();
-score_sound.src = "/audio/audio_sfx_point.wav"
+score_sound.src = "https://rebeccaabel.github.io/Flappy-Bird/audio/audio_sfx_point.wav"
 
 const swoosh_sound = new Audio();
-swoosh_sound.src = "/audio/audio_sfx_swooshing.wav"
+swoosh_sound.src = "https://rebeccaabel.github.io/Flappy-Bird/audio/audio_sfx_swooshing.wav"
 
 const hit_sound = new Audio();
-hit_sound.src = "/audio/audio_sfx_hit.wav"
+hit_sound.src = "https://rebeccaabel.github.io/Flappy-Bird/audio/audio_sfx_hit.wav"
 
 const die_sound = new Audio();
-die_sound.src = "/audio/audio_sfx_die.wav"
+die_sound.src = "https://rebeccaabel.github.io/Flappy-Bird/audio/audio_sfx_die.wav"
 
 const flap_sound = new Audio();
-flap_sound.src = "/audio/audio_sfx_flap.wav"
+flap_sound.src = "https://rebeccaabel.github.io/Flappy-Bird/audio/audio_sfx_flap.wav"
 
 const gameState = {
     current : 0,
