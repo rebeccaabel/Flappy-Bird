@@ -5,7 +5,7 @@ let frames = 0;
 const rotationDegree = Math.PI/180;
 
 const sprite = new Image();
-sprite.src = "https://rebeccaabel.github.io/Flappy-Bird/pictures/sprite.png";
+sprite.src = "./pictures/sprite.png";
 
 const score_sound = new Audio();
 score_sound.src = "./audio/audio_sfx_point.wav"
