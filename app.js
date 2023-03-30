@@ -142,13 +142,13 @@ const bird = {
 
     update : function () {
         //GAME STATE IS GET READY BIRD FLAP SLOWLY 
-        this.period = gameState.current == gameState.getReady ? 10 : 5;
+        this.period = gameState.current === gameState.getReady ? 10 : 5;
         // FRAME +1 EACH PERIOD
-        this.frame += frames % this.period == 0 ? 1 : 0;
+        this.frame += frames % this.period === 0 ? 1 : 0;
         //BACK TO 0 WHEN FRAME = 4
         this.frame = this.frame % this.animation.length;
 
-        if(gameState.current == gameState.getReady){
+        if(gameState.current === gameState.getReady){
             this.y = 150; // RESET BIRD POSITION
             this.rotation = 0 * rotationDegree;
         }else {
@@ -157,7 +157,7 @@ const bird = {
 
             if(this.y + this.h/2 >= canvas.height - ground.h) {
                 this.y = canvas.height - ground.h - this.h/2;
-                if(gameState.current == gameState.game){
+                if(gameState.current === gameState.game){
                     gameState.current = gameState.gameOver;
                     die_sound.play();
                 }
@@ -187,7 +187,7 @@ const getReady = {
     y : 80,
 
     draw : function(){
-        if(gameState.current == gameState.getReady) {
+        if(gameState.current === gameState.getReady) {
             context.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
         }
     }
@@ -202,7 +202,7 @@ const gameOverMsg = {
     y : 90,
 
     draw : function(){
-        if(gameState.current == gameState.gameOver) {
+        if(gameState.current === gameState.gameOver) {
             context.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
         }
     }
@@ -247,7 +247,7 @@ const pipes = {
     update: function () {
         if(gameState.current !== gameState.game) return;
 
-        if(frames % 100 == 0) {
+        if(frames % 100 === 0) {
             this.position.push({
                 x: canvas.width,
                 y: this.maxYPosition * (Math.random() + 1) ,
@@ -298,13 +298,13 @@ const score = {
         context.fillStyle = "#FFF";
         context.strokeStyle = "#000"
 
-        if(gameState.current == gameState.game) {
+        if(gameState.current === gameState.game) {
             context.lineWidth = 2;
             context.font = "35px Teko";
             context.fillText(this.value, canvas.width/2, 50);
             context.strokeText(this.value, canvas.width/2, 50);
 
-        } else if(gameState.current == gameState.gameOver) {
+        } else if(gameState.current === gameState.gameOver) {
             // SCORE 
             context.font = "25px Teko";
             context.fillText(this.value, 225, 186);
